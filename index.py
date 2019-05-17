@@ -1,10 +1,13 @@
+#https://www.bigchaindb.com/developers/guide/key-concepts-of-bigchaindb/
+#http://docs.bigchaindb.com/projects/py-driver/en/latest/usage.html
+#https://www.bigchaindb.com/developers/guide/tutorial-car-telemetry-app/
+
 from bigchaindb_driver import BigchainDB
 from bigchaindb_driver.crypto import generate_keypair
 import pprint
 pp = pprint.PrettyPrinter()
 
 conn = BigchainDB('https://test.bigchaindb.com')
-#conn = new Mongo()
 
 def create_transaction(prepared_transfer_tx, private_key):
     _id = prepared_transfer_tx['inputs'][0]['fulfills']['transaction_id']
@@ -23,7 +26,6 @@ def create_transaction(prepared_transfer_tx, private_key):
 
 def assign_transaction(responsible):
     metadata = {'status': 'in process'}
-    #transfer
     prepared_transfer_tx = conn.transactions.prepare(
          operation='TRANSFER',
          asset=transfer_asset,
@@ -35,7 +37,6 @@ def assign_transaction(responsible):
 
 def close_transaction(responsible):
     metadata = {'status': 'closed'}
-    #transfer
     prepared_transfer_tx = conn.transactions.prepare(
          operation='TRANSFER',
          asset=transfer_asset,
@@ -49,9 +50,7 @@ def create_new(data):
     complaint = {
         'data': data,
     }
-
     metadata = {'status': 'initial'}
-
     prepared_creation_tx = conn.transactions.prepare(
          operation='CREATE',
          signers=alice.public_key,
@@ -59,15 +58,11 @@ def create_new(data):
          metadata=metadata,
      )
 
-
     fulfilled_creation_tx = conn.transactions.fulfill(
         prepared_creation_tx,
         private_keys=alice.private_key
      )
-
-
     sent_creation_tx = conn.transactions.send_commit(fulfilled_creation_tx)
-
     return sent_creation_tx, fulfilled_creation_tx
 
 #start here
@@ -79,7 +74,6 @@ data = {'denounced': 'Bob Smith',
     'canLink':[director.public_key,hr.public_key, police.public_key]}
 
 sent_creation_tx, fulfilled_creation_tx = create_new(data)
-# print(sent_creation_tx == fulfilled_creation_tx)
 
 
 transfer_asset = {
@@ -109,7 +103,6 @@ print(sent_transfer_tx == fulfilled_transfer_tx)
 
 print("Is The director the owner?",fulfilled_transfer_tx['outputs'][0]['public_keys'][0] == director.public_key)
 print("Was Alice the previous owner?",fulfilled_transfer_tx['inputs'][0]['owners_before'][0] == alice.public_key)
-
 
 #close transaction
 close_transaction_tx = close_transaction(director)
